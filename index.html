@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#10191d" />
+  <title>Hell's Belles — Pleasant Valley, 1994</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="game-shell">
+    <canvas id="game"></canvas>
+    <div class="vignette"></div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">H</span><div><b>HELL'S BELLES</b><small>PLEASANT VALLEY · EST. 1994</small></div></div>
+      <div class="day-chip"><span class="sun">☼</span> SATURDAY, JUNE 18 <i></i> 10:42 AM</div>
+      <button class="sound-button" id="sound-toggle" aria-label="Toggle sound">♫ <span>SOUND ON</span></button>
+    </header>
+    <section class="mission-card">
+      <div class="mission-label"><span class="live-dot"></span> NEIGHBORHOOD WATCH</div>
+      <h2>Something's in<br>the <em>cul-de-sac.</em></h2>
+      <div class="mission-copy">The Hendersons' lawn is acting strange again.<br>Keep Pleasant Valley pleasant.</div>
+      <div class="mission-progress"><div><span>UNINVITED GUESTS</span><b id="kill-count">0 <small>/ 8</small></b></div><div class="progress-track"><i id="progress-fill"></i></div></div>
+      <div class="task-line"><span class="task-icon">⌖</span><span id="objective">Clear the neighborhood</span><span class="task-arrow">↗</span></div>
+    </section>
+    <div class="crosshair"><i></i><i></i><i></i><i></i><b></b></div>
+    <div class="weapon"><div class="weapon-flare" id="muzzle-flash"></div><div class="weapon-body"><span class="weapon-sight"></span><span class="weapon-barrel"></span><span class="weapon-grip"></span><span class="weapon-label">PV-12</span></div></div>
+    <section class="bottom-hud">
+      <div class="player-card"><div class="portrait">J</div><div class="player-meta"><b>JAMIE PARKER</b><small>THE NEW NEIGHBOR</small><div class="needs"><i class="need green"></i><i class="need yellow"></i><i class="need blue"></i><i class="need red"></i><span>NEEDS</span></div></div></div>
+      <div class="stat-group"><div class="stat"><span class="stat-icon heart">♥</span><div><small>HEALTH</small><b id="health-value">100</b></div><div class="bar"><i id="health-bar"></i></div></div><div class="stat ammo-stat"><span class="stat-icon ammo-icon">▣</span><div><small>AMMO</small><b id="ammo-value">24 <small>/ 96</small></b></div><div class="bar ammo-bar"><i id="ammo-bar"></i></div></div></div>
+      <div class="weapon-tag"><span>▰</span><div><small>HOUSEHOLD DEFENSE</small><b>PLASMA MOWER <i>MK. II</i></b></div><kbd>1</kbd></div>
+    </section>
+    <div class="toast" id="toast"></div>
+    <div class="hurt-flash" id="hurt-flash"></div>
+    <div class="overlay" id="intro">
+      <div class="intro-card">
+        <div class="intro-kicker"><span>▰</span> A VERY NORMAL SUBURBAN AFTERNOON</div>
+        <div class="intro-title">WELCOME<br>TO <em>HELL.</em></div>
+        <p>Three perfectly nice homes. Eight deeply impolite guests.<br>One plasma-powered lawn care solution.</p>
+        <button id="start-button" class="start-button">CLOCK IN <span>→</span></button>
+        <div class="controls-note"><span>WASD</span> MOVE <i>·</i> <span>CLICK</span> MOW <i>·</i> <span>R</span> RELOAD <i>·</i> <span>SHIFT</span> HUSTLE</div>
+        <div class="intro-footer">PLEASE RESPECT THE NEIGHBORHOOD ASSOCIATION.</div>
+      </div>
+    </div>
+    <div class="mobile-controls" id="mobile-controls"><div class="dpad"><button data-move="forward">↑</button><div><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div></div><button id="mobile-fire" class="fire-button">MOW</button><button id="mobile-reload" class="reload-button">↻</button></div>
+    <div class="win-overlay hidden" id="win-overlay"><div class="win-card"><span>PLEASANT VALLEY THANKS YOU</span><h2>GOOD<br>NEIGHBOR.</h2><p>Eight pests removed. One very tidy cul-de-sac.</p><button id="again-button">TAKE ANOTHER SHIFT ↻</button></div></div>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
