@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>The Last Lantern</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050809;color:#dce9e7;font-family:Georgia,'Times New Roman',serif;touch-action:none}canvas{display:block;width:100%;height:100%}.grain{position:absolute;inset:0;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E")}.hud{position:absolute;left:22px;top:18px;z-index:3;display:flex;align-items:center;gap:10px;font-family:system-ui,sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#c8d3cf}.orb{width:10px;height:10px;border-radius:50%;background:#e9f5e8;box-shadow:0 0 10px 3px #bbd7ca}.titlecard{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;text-shadow:0 3px 18px #000;pointer-events:none;transition:.8s}.titlecard.hidden{opacity:0}.titlecard h1{font-weight:normal;font-size:clamp(32px,6vw,74px);letter-spacing:.12em;margin:0}.titlecard p{font-family:system-ui,sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase}.controls{position:absolute;z-index:4;bottom:18px;left:18px;display:flex;gap:10px}.actions{position:absolute;z-index:4;bottom:18px;right:18px}.pad,.jump{width:68px;height:68px;border:1px solid rgba(220,235,225,.22);border-radius:50%;background:rgba(10,18,17,.32);color:#eef5ee;font-size:24px;backdrop-filter:blur(3px);touch-action:none}.jump{width:76px;height:76px}.controls{display:none}@media(pointer:coarse),(max-width:800px){.controls{display:flex}.hud{top:12px;left:14px}.jump{border-radius:50%}}#toast{position:absolute;z-index:5;bottom:105px;width:100%;text-align:center;opacity:0;transition:opacity .4s;font-size:14px;letter-spacing:.08em;text-shadow:0 2px 8px #000}#toast.show{opacity:1}
+</style>
+</head><body>
+<canvas id="game"></canvas><div class="grain"></div><div class="hud"><span class="orb"></span><span id="chapter">A memory in the reeds</span></div><div class="titlecard" id="title"><h1>THE LAST LANTERN</h1><p>Press any key to begin</p></div><div id="toast"></div>
+<div class="controls"><button class="pad" id="left">‹</button><button class="pad" id="right">›</button></div><div class="actions"><button class="jump" id="jump">↑</button></div>
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');let W,H,DPR;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);resize();
+const keys={},touch={left:false,right:false,jump:false};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowLeft','ArrowRight','ArrowUp',' ','a','d','w'].includes(e.key))e.preventDefault();if(!started)start()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function bind(id,key){const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);touch[key]=true;if(!started)start()});el.addEventListener('pointerup',()=>touch[key]=false);el.addEventListener('pointercancel',()=>touch[key]=false)}bind('left','left');bind('right','right');bind('jump','jump');
+let started=false,level=0,dead=false,checkPoint={x:65,y:0},deathTimer=0,won=false,completed=new Set(),sparkles=[];
+const chapters=['A memory in the reeds','The abandoned mill','The drowned orchard','The keeper’s house','The hill at dawn'];
+const palettes=[['#071011','#9baaa3'],['#0a0d0d','#a8aaa0'],['#080d0f','#98a9a5'],['#090a09','#aaa89b'],['#091015','#cbd0b5']];
+function world(){const y=H*.78;return {ground:y}}
+let player={x:70,y:0,vx:0,vy:0,r:15,ground:false,face:1};
+function start(){started=true;document.getElementByById('title').classList.add('hidden')}
+function reset(){player.x=checkPoint.x;player.y=checkPoint.y||world().ground-player.r*2;player.vx=player.vy=0;dead=false;deathTimer=0}
+function die(){if(dead)return;dead=true;deathTimer=60;sparkles=[]}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1800)}
+function rect(x,y,w,h){ctx.fillRect(x,y,w,h)}
+function line(a,b,c='#000'){ctx.strokeStyle=c;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
+function inRect(p,r){return p.x+r>r.x&&p.x-r<r.x+r.w&&p.y+r>r.y&&p.y-r<r.y+r.h}
+const levels=[
+ {platforms:[[0,.78,1,.22],[.34,.61,.14,.03],[.61,.48,.12,.03],[.82,.63,.18,.37]],hazards:[[.48,.78,.08,.09],[.91,.63,.04,.15]],lantern:[.72,.44],door:[.94,.58,.045,.2],cp:[.58,.66]},
+ {platforms:[[0,.78,1,.22],[.16,.63,.16,.05],[.43,.55,.11,.05],[.64,.69,.1,.05],[.82,.48,.18,.04]],hazards:[[.36,.78,.12,.06],[.58,.78,.2,.06]],lantern:[.28,.58],door:[.89,.38,.05,.1],cp:[.44,.48],mill:true},
+ {platforms:[[0,.78,1,.22],[.16,.67,.12,.04],[.33,.58,.12,.04],[.51,.48,.11,.04],[.69,.57,.12,.04],[.86,.68,.14,.1]],hazards:[[.28,.78,.18,.07],[.63,.78,.18,.07],[.46,.48,.035,.1]],lantern:[.71,.52],door:[.94,.58,.05,.1],cp:[.52,.42],raven:true},
+ {platforms:[[0,.78,1,.22],[.18,.64,.14,.05],[.38,.54,.12,.05],[.57,.68,.13,.05],[.76,.55,.13,.05],[.89,.78,.11,.22]],hazards:[[.31,.78,.07,.08],[.70,.78,.06,.08]],lantern:[.82,.50],door:[.94,.68,.05,.1],cp:[.58,.61],house:true},
+ {platforms:[[0,.78,1,.22],[.19,.66,.12,.04],[.38,.56,.11,.04],[.55,.46,.12,.04],[.72,.38,.11,.04],[.86,.52,.14,.26]],hazards:[],lantern:[.89,.47],door:[.94,.42,.05,.1],cp:[.72,.34],sun:true}
+];
+function screenRect(a){return{x:a[0]*W,y:a[1]*H,w:a[2]*W,h:a[3]*H}}
+function setupLevel(){player.x=checkPoint.x>100?65:checkPoint.x;player.y=world().ground-40;player.vx=player.vy=0;dead=false;document.getElementById('chapter').textContent=chapters[level];sparkles=[]}
+function nextLevel(){completed.add(level);level++;if(level>=levels.length){won=true;toast('THE LIGHT RETURNS');return}checkPoint={x:65,y:world().ground-40};setupLevel();toast(level===4?'A final hill waits':'The lantern remembers')}
+function update(){if(!started||won)return;if(dead){deathTimer--;if(deathTimer<=0){reset()}return}const left=keys['arrowleft']||keys['a']||touch.left,right=keys['arrowright']||keys['d']||touch.right,jump=keys['arrowup']||keys['w']||keys[' ']||touch.jump;
+ if(left){player.vx-=.75;player.face=-1}if(right){player.vx+=.75;player.face=1}player.vx*=.82;player.vx=Math.max(-5,Math.min(5,player.vx));player.vy+=.65;player.vy=Math.min(14,player.vy);
+ player.x+=player.vx;player.y+=player.vy;player.x=Math.max(12,Math.min(W-12,player.x));player.ground=false;
+ const L=levels[level];for(const a of L.platforms){const r=screenRect(a);if(player.x+r?false:false){}}// collision below
+ for(const a of L.platforms){const r=screenRect(a);const px=player.x,py=player.y,pr=12;if(px+pr>r.x&&px-pr<r.x+r.w&&py+pr>r.y&&py+pr-player.vy<=r.y+8&&player.vy>=0){player.y=r.y-pr;player.vy=0;player.ground=true}}
+ if(player.ground&&jump)player.vy=-12.2;
+ for(const a of (L.hazards||[])){const r=screenRect(a);if(Math.abs(player.x-(r.x+r.w/2))<r.w/2+10&&player.y+r?false:false){}};
+ for(const a of (L.hazards||[])){const r=screenRect(a);if(player.x+10>r.x&&player.x-10<r.x+r.w&&player.y+12>r.y&&player.y-12<r.y+r.h){die();break}}
+ if(player.y>H+60)die();
+ const lantern=L.lantern?[L.lantern[0]*W,L.lantern[1]*H]:null;if(lantern&&Math.hypot(player.x-lantern[0],player.y-lantern[1])<42&&!completed.has('l'+level)){completed.add('l'+level);toast(level===4?'Carry it home':'The lantern wakes');for(let i=0;i<18;i++)sparkles.push({x:lantern[0],y:lantern[1],vx:(Math.random()-0.5)*3,vy:(Math.random()-1)*3,a:1})}
+ if(completed.has('l'+level)){const d=screenRect(L.door);if(player.x>d.x&&player.x<d.x+d.w&&player.y>d.y&&player.y<d.y+d.h)nextLevel()}
+ sparkles.forEach(s=>{s.x+=s.vx;s.y+=s.vy;s.vy+=.05;s.a-=.018});sparkles=sparkles.filter(s=>s.a>0);
+}
+function bg(){const [deep,light]=palettes[level];let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,deep);g.addColorStop(1,light);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.globalAlpha=.18;ctx.fillStyle='#dce9df';for(let i=0;i<8;i++){const x=((i*191+level*70)% (W+300))-150,y=H*(.18+(i%4)*.14);ctx.beginPath();ctx.ellipse(x,y,160+i*20,35,0,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+ if(level===4){ctx.fillStyle='rgba(230,225,175,.12)';ctx.beginPath();ctx.arc(W*.82,H*.23,85,0,7);ctx.fill()}
+}
+function drawPlayer(){ctx.save();ctx.translate(player.x,player.y);ctx.scale(player.face,1);ctx.fillStyle='#030505';ctx.beginPath();ctx.arc(0,-19,12,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-12,-8);ctx.lineTo(-8,10);ctx.lineTo(8,10);ctx.lineTo(12,-8);ctx.quadraticCurveTo(0,-14,-12,-8);ctx.fill();ctx.lineWidth=4;ctx.strokeStyle='#030505';ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(-10,24);ctx.moveTo(5,8);ctx.lineTo(12,24);ctx.stroke();ctx.restore()}
+function draw(){update();bg();const L=levels[level];ctx.fillStyle='#020404';for(const a of L.platforms){const r=screenRect(a);ctx.fillRect(r.x,r.y,r.w,r.h)}
+ ctx.fillStyle='rgba(4,7,7,.9)';for(let i=0;i<35;i++){const x=(i*137+level*31)%W;const base=H*.78;ctx.fillRect(x,base-((i%5)*6),2,H-base)}
+ if(L.mill){ctx.save();ctx.translate(W*.7,H*.38);ctx.rotate(performance.now()/7000);ctx.fillStyle='#050606';for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.fillRect(-5,-5,10,130)}ctx.restore()}
+ if(L.raven){ctx.fillStyle='#050606';const x=W*.62+Math.sin(performance.now()/900)*35,y=H*.25;ctx.beginPath();ctx.ellipse(x,y,18,8,-.2,0,7);ctx.fill()}
+ if(L.house){ctx.fillStyle='#050606';ctx.beginPath();ctx.moveTo(W*.72,H*.78);ctx.lineTo(W*.72,H*.45);ctx.lineTo(W*.86,H*.30);ctx.lineTo(W*.96,H*.45);ctx.lineTo(W*.96,H*.78);ctx.fill();ctx.fillStyle='rgba(155,170,150,.12)';ctx.fillRect(W*.79,H*.56,W*.07,H*.08)}
+ ctx.fillStyle='#050505';for(const a of (L.hazards||[])){const r=screenRect(a);ctx.beginPath();ctx.moveTo(r.x,r.y+r.h);for(let x=r.x;x<=r.x+r.w;x+=8){ctx.lineTo(x,r.y+(x%16===0?-8:5))}ctx.lineTo(r.x+r.w,r.y+r.h);ctx.fill()}
+ const lantern=L.lantern?[L.lantern[0]*W,L.lantern[1]*H]:null;if(lantern&&!completed.has('l'+level)){ctx.fillStyle='rgba(215,229,210,.07)';ctx.beginPath();ctx.arc(lantern[0],lantern[1],45+Math.sin(performance.now()/400)*5,0,7);ctx.fill();ctx.fillStyle='#e5eee0';ctx.beginPath();ctx.arc(lantern[0],lantern[1],5,0,7);ctx.fill();ctx.strokeStyle='#bfcabe';ctx.strokeRect(lantern[0]-8,lantern[1]-12,16,22)}
+ if(completed.has('l'+level)){const d=screenRect(L.door);ctx.fillStyle='#020303';ctx.fillRect(d.x,d.y,d.w,d.h);ctx.fillStyle='rgba(210,225,210,.25)';ctx.beginPath();ctx.arc(d.x+d.w/2,d.y+d.h/2,18,0,7);ctx.fill()}
+ sparkles.forEach(s=>{ctx.globalAlpha=s.a;ctx.fillStyle='#eef5dc';ctx.beginPath();ctx.arc(s.x,s.y,2,0,7);ctx.fill()});ctx.globalAlpha=1;
+ if(dead){ctx.fillStyle=`rgba(0,0,0,${Math.min(.8,(60-deathTimer)/30)})`;ctx.fillRect(0,0,W,H)}else if(!won)drawPlayer();
+ if(won){ctx.fillStyle='rgba(3,7,7,.72)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#dfe7d9';ctx.textAlign='center';ctx.font=`${Math.min(64,W*.09)}px Georgia`;ctx.fillText('DAWN',W/2,H*.46);ctx.font='12px system-ui';ctx.fillText('THE LIGHT FOUND ITS WAY HOME',W/2,H*.46+45);ctx.textAlign='left'}
+ requestAnimationFrame(draw)}
+reset();draw();
+</script></body></html>
